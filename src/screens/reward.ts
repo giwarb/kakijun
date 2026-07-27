@@ -5,6 +5,9 @@
  */
 
 import type { CharGroup } from '../lib/groups.ts';
+import { playTap, playSticker } from '../lib/audio.ts';
+import { createMascot } from '../lib/mascot.ts';
+import { burstConfetti } from '../lib/confetti.ts';
 
 const AUTO_ADVANCE_MS = 3000;
 const STICKER_AUTO_ADVANCE_MS = 3500;
@@ -38,11 +41,16 @@ export function mountRewardScreen(container: HTMLElement, props: RewardScreenPro
   container.classList.add('reward-screen');
   container.dataset.stars = String(props.stars);
 
+  // 文字完走のごほうび: よろこびで跳ねるマスコット + 紙吹雪 (prefers-reduced-motion では無効)
+  const mascot = createMascot('happy', { className: 'reward-mascot mascot-bounce' });
+
   const message = document.createElement('div');
   message.className = 'reward-message';
   message.textContent = 'よくできました!';
 
-  container.append(message, starRow(props.stars));
+  container.append(mascot, message, starRow(props.stars));
+  // コンテンツを積んだ後に紙吹雪を発火する (canvas がコンテンツより後に追加されるようにするため)
+  burstConfetti(container);
 
   const actions = document.createElement('div');
   actions.className = 'reward-actions';
@@ -53,6 +61,7 @@ export function mountRewardScreen(container: HTMLElement, props: RewardScreenPro
   retryBtn.textContent = 'もういちど';
   retryBtn.addEventListener('click', () => {
     if (!markHandled()) return;
+    playTap();
     props.onRetry();
   });
 
@@ -62,6 +71,7 @@ export function mountRewardScreen(container: HTMLElement, props: RewardScreenPro
   nextBtn.textContent = 'つぎへ';
   nextBtn.addEventListener('click', () => {
     if (!markHandled()) return;
+    playTap();
     props.onNext();
   });
 
@@ -104,6 +114,10 @@ export function mountStickerScreen(container: HTMLElement, props: StickerScreenP
   container.classList.add('sticker-screen');
   container.dataset.stickerId = props.group.id;
 
+  // ステッカー獲得は文字完走よりさらに嬉しい瞬間: 多めでゆっくりの紙吹雪 + 専用の効果音
+  playSticker();
+  const mascot = createMascot('happy', { className: 'reward-mascot mascot-bounce' });
+
   const message = document.createElement('div');
   message.className = 'sticker-message';
   message.textContent = `「${props.group.label}」コンプリート!`;
@@ -122,10 +136,13 @@ export function mountStickerScreen(container: HTMLElement, props: StickerScreenP
   continueBtn.textContent = 'つぎへ';
   continueBtn.addEventListener('click', () => {
     if (!markHandled()) return;
+    playTap();
     props.onContinue();
   });
 
-  container.append(message, badge, sub, continueBtn);
+  container.append(mascot, message, badge, sub, continueBtn);
+  // コンテンツを積んだ後に紙吹雪を発火する (canvas がコンテンツより後に追加されるようにするため)
+  burstConfetti(container, { count: 200, durationMs: 2500, gentle: true });
 
   // 連打ガード (mountRewardScreen と同じ考え方): onContinue が二重に呼ばれないようにする
   let handled = false;

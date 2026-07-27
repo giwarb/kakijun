@@ -1,6 +1,7 @@
 :root {
   color-scheme: light;
-  font-family: system-ui, 'Hiragino Maru Gothic ProN', 'Hiragino Sans', sans-serif;
+  font-family: 'Hiragino Maru Gothic ProN', 'BIZ UDGothic', 'Yu Gothic UI', 'Yu Gothic', 'Hiragino Sans',
+    system-ui, sans-serif;
 }
 
 * {
@@ -14,6 +15,12 @@ body {
   width: 100%;
   height: 100%;
   background-color: #fff7ef;
+  /* パステルなクリーム→ミントのグラデーションに、うっすら水玉を重ねる */
+  background-image: radial-gradient(circle, rgba(111, 168, 220, 0.14) 1.6px, transparent 1.7px),
+    linear-gradient(165deg, #fff7ef 0%, #fff1e9 45%, #eaf7f0 100%);
+  background-size: 26px 26px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  background-attachment: fixed;
   overscroll-behavior: none;
   touch-action: manipulation;
 }
@@ -30,6 +37,18 @@ body {
 button {
   font-family: inherit;
   cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+/* ぷにっと押し込みアニメ (6歳児向けの手応え) */
+button:active {
+  transform: scale(0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:active {
+    transform: none;
+  }
 }
 
 /* ---- 画面遷移 (ふわっとしたフェード, 200ms) ---- */
@@ -72,6 +91,11 @@ button {
   color: #8a7a6a;
 }
 
+.title-mascot {
+  width: clamp(160px, 42vmin, 260px);
+  height: auto;
+}
+
 .title-start-btn {
   min-width: 64px;
   min-height: 64px;
@@ -96,6 +120,154 @@ button {
 
 .mute-btn.muted {
   background: #f2ede6;
+}
+
+/* ---- マスコット (しろねこ) ---- */
+
+.mascot {
+  display: block;
+  overflow: visible;
+}
+
+.mascot-ear,
+.mascot-head,
+.mascot-body,
+.mascot-paw {
+  fill: #ffffff;
+  stroke: #e0d3c4;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.mascot-ear-inner {
+  fill: #ffc4d6;
+}
+
+.mascot-belly {
+  fill: #fff3e6;
+}
+
+.mascot-arm {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 11;
+  stroke-linecap: round;
+}
+
+.mascot-tail {
+  fill: #ffffff;
+  stroke: #e0d3c4;
+  stroke-width: 2.5;
+}
+
+.mascot-cheek {
+  fill: #ffb3c6;
+  opacity: 0.8;
+}
+
+.mascot-eye {
+  fill: #5b4636;
+}
+
+.mascot-eye-highlight {
+  fill: #ffffff;
+}
+
+.mascot-eyebrow {
+  fill: none;
+  stroke: #5b4636;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.mascot-mouth {
+  fill: none;
+  stroke: #5b4636;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.mascot-mouth-open {
+  fill: #ff8fab;
+  stroke: #5b4636;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.mascot-whisker {
+  stroke: #e5d9cb;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.mascot-sweat {
+  fill: #8fd0ff;
+}
+
+.mascot-sparkle {
+  fill: #ffd166;
+}
+
+.mascot-pompom circle {
+  stroke: #ffffff;
+  stroke-width: 1;
+}
+.mascot-pompom circle:nth-child(1) {
+  fill: #f4a5bd;
+}
+.mascot-pompom circle:nth-child(2) {
+  fill: #6fa8dc;
+}
+.mascot-pompom circle:nth-child(3) {
+  fill: #ffd166;
+}
+.mascot-pompom circle:nth-child(4) {
+  fill: #b5e8b0;
+}
+.mascot-pompom circle:nth-child(5) {
+  fill: #c9a6ff;
+}
+
+/* タイトル画面: ゆらゆら idle アニメ (大きく登場) */
+.mascot-idle {
+  animation: mascot-idle-sway 2.6s ease-in-out infinite;
+  transform-origin: 60px 118px;
+}
+
+@keyframes mascot-idle-sway {
+  0%,
+  100% {
+    transform: rotate(-3deg) translateY(0);
+  }
+  50% {
+    transform: rotate(3deg) translateY(-4px);
+  }
+}
+
+/* ごほうび画面: よろこびで跳ねる */
+.mascot-bounce {
+  animation: mascot-bounce-jump 0.8s ease-in-out infinite;
+  transform-origin: 60px 120px;
+}
+
+@keyframes mascot-bounce-jump {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  35% {
+    transform: translateY(-14px) scale(1.02, 0.98);
+  }
+  60% {
+    transform: translateY(0) scale(0.98, 1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-idle,
+  .mascot-bounce {
+    animation: none;
+  }
 }
 
 /* ---- もじえらび画面 ---- */
@@ -174,6 +346,7 @@ button {
 }
 
 .char-card {
+  position: relative;
   min-width: 64px;
   min-height: 64px;
   display: flex;
@@ -185,6 +358,16 @@ button {
   border: 2px solid #e5d9cb;
   border-radius: 1rem;
   box-shadow: 0 2px 6px rgba(91, 70, 54, 0.08);
+}
+
+/* 文字カードの小さな装飾 (見た目だけ。星・音符を交互に) */
+.char-card-deco {
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  font-size: 0.75rem;
+  color: #ffd166;
+  line-height: 1;
 }
 
 .char-card-char {
@@ -237,6 +420,27 @@ button {
   gap: 1.25rem;
   padding: 1rem;
   text-align: center;
+}
+
+/*
+ * ごほうび/ステッカー画面のコンテンツは、あとから追加される .fx-canvas (紙吹雪, z-index: 20) より
+ * 必ず手前に表示されるよう、position + z-index を明示する (紙吹雪が文字や星に重なって見えなくなる事故を防ぐ)。
+ */
+.reward-mascot,
+.reward-message,
+.reward-stars,
+.reward-actions,
+.sticker-message,
+.sticker-badge,
+.sticker-sub,
+.sticker-continue-btn {
+  position: relative;
+  z-index: 21;
+}
+
+.reward-mascot {
+  width: clamp(120px, 30vmin, 180px);
+  height: auto;
 }
 
 .reward-message,
@@ -521,10 +725,36 @@ button {
   fill: #6fa8dc;
 }
 
+.practice-message-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 640px;
+}
+
+.practice-mascot {
+  width: 56px;
+  height: auto;
+  flex: 0 0 auto;
+}
+
 .practice-message {
   min-height: 2.4rem;
   font-size: 1.3rem;
   font-weight: 700;
   color: #5b4636;
   text-align: center;
+}
+
+/* ---- 紙吹雪・キラキラ (Canvas オーバーレイ) ---- */
+
+.fx-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
 }

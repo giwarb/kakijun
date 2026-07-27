@@ -7,6 +7,8 @@
 import type { CharStrokeData } from '../data/types.ts';
 import { matchStroke, type FailReason, type Point } from '../lib/matcher.ts';
 import { playOops, playPop, playSuccess } from '../lib/audio.ts';
+import { createMascot, setMascotMood, type MascotMood } from '../lib/mascot.ts';
+import { burstSparkle } from '../lib/confetti.ts';
 import { PracticeState, type Phase, type PracticeResult, type PracticeStateSnapshot } from '../lib/practiceState.ts';
 import {
   createCompletedPath,
@@ -46,13 +48,23 @@ declare global {
   }
 }
 
-const SUCCESS_MESSAGES = ['すごい!', 'じょうず!', 'そのちょうし!', 'やったね!', 'ぴったり!'];
+const SUCCESS_MESSAGES = [
+  'すごい!',
+  'じょうず!',
+  'そのちょうし!',
+  'やったね!',
+  'ぴったり!',
+  'いいね!',
+  'かんぺき!',
+  'すてき!',
+];
 
-const REASON_MESSAGES: Record<FailReason, string> = {
-  'wrong-order': 'じゅんばんが ちがうよ!',
-  'wrong-direction': 'むきが はんたい!',
-  'wrong-start': 'スタートは ここだよ!',
-  'wrong-shape': 'おしい! もういちど!',
+/** 失敗理由ごとの励ましメッセージ (複数から毎回ランダムに選ぶ。悲しませない言い回しにする) */
+const REASON_MESSAGES: Record<FailReason, string[]> = {
+  'wrong-order': ['じゅんばんが ちがうよ!', 'つぎは ここから かいてね'],
+  'wrong-direction': ['むきが はんたい!', 'ぎゃくむきに うごいちゃった'],
+  'wrong-start': ['はじめは ここだよ!', 'ここから はじめてね'],
+  'wrong-shape': ['おしい! もういちど!', 'だいじょうぶ! ゆっくりでいいよ', 'もうすこしで せいかい!'],
 };
 
 const PHASE_START_MESSAGES: Record<Phase, string> = {
@@ -144,10 +156,28 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
   ensureArrowMarkerDefs(svgEl);
   stageWrap.appendChild(svgEl);
 
+  const messageRow = document.createElement('div');
+  messageRow.className = 'practice-message-row';
+
+  // メッセージ帯の横に常駐する小さなマスコット (正解→よろこび、ミス→こまり顔、フェーズ開始→おうえん)
+  const mascotEl = createMascot('normal', { className: 'practice-mascot' });
+
   const messageEl = document.createElement('div');
   messageEl.className = 'practice-message';
 
-  container.append(header, progressDotsEl, stageWrap, messageEl);
+  messageRow.append(mascotEl, messageEl);
+  container.append(header, progressDotsEl, stageWrap, messageRow);
+
+  let moodRevertTimer = 0;
+
+  /** マスコットの表情を一時的に切り替え、しばらくしたら「ふつう」に戻す */
+  function flashMood(mood: MascotMood, revertMs: number): void {
+    setMascotMood(mascotEl, mood);
+    window.clearTimeout(moodRevertTimer);
+    moodRevertTimer = window.setTimeout(() => {
+      if (!destroyed) setMascotMood(mascotEl, 'normal');
+    }, revertMs);
+  }
 
   function setMessage(text: string): void {
     messageEl.textContent = text;
@@ -249,6 +279,11 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
 
       if (result.ok) {
         playPop();
+        // 書き終わり位置 (最後の点) から小さなキラキラを飛ばす。viewBox は 0-109 固定
+        const lastPoint = points[points.length - 1];
+        if (lastPoint) {
+          burstSparkle(stageWrap, lastPoint.x / 109, lastPoint.y / 109);
+        }
         await snapToReference(trail, referenceD);
         trail.remove();
         const outcome = state.recordStrokeResult(true);
@@ -257,19 +292,23 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
         if (outcome.snapshot.phase === 'complete') {
           // 完走したときだけファンファーレ (毎画では playPop() のみ鳴らす)
           playSuccess();
+          flashMood('happy', 2000);
           setMessage(PHASE_START_MESSAGES.complete);
           props.onComplete(state.getResult());
         } else if (outcome.snapshot.phase !== previousPhase) {
           // trace → solo へ切り替わった直後: ガイドが消えることの説明メッセージ
+          flashMood('cheer', 1500);
           setMessage(PHASE_START_MESSAGES[outcome.snapshot.phase]);
         } else {
+          flashMood('happy', 700);
           setMessage(pickRandom(SUCCESS_MESSAGES));
         }
       } else {
         playOops();
         await Promise.all([fadeOutTrail(trail), shakeElement(stageWrap)]);
         const reason: FailReason = result.reason ?? 'wrong-shape';
-        setMessage(REASON_MESSAGES[reason]);
+        flashMood('sad', 1200);
+        setMessage(pickRandom(REASON_MESSAGES[reason]));
         await runCorrectionOverlay(strokeIndex, reason);
         const outcome = state.recordStrokeResult(false);
         if (outcome.hintTriggered) {
@@ -289,6 +328,7 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
     renderStage();
     const snap = state.getSnapshot();
     updateHeader(snap);
+    flashMood('cheer', 1500);
     setMessage(PHASE_START_MESSAGES.trace);
   }
 
@@ -297,6 +337,7 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
     watchAbort = controller;
     renderStage();
     updateHeader(state.getSnapshot());
+    flashMood('cheer', 1500);
     setMessage(PHASE_START_MESSAGES.watch);
 
     for (let i = 0; i < strokeCount; i++) {
@@ -395,6 +436,7 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
   return function unmount(): void {
     destroyed = true;
     watchAbort?.abort();
+    window.clearTimeout(moodRevertTimer);
     svgEl.removeEventListener('pointerdown', onPointerDown);
     svgEl.removeEventListener('pointermove', onPointerMove);
     svgEl.removeEventListener('pointerup', onPointerUp);

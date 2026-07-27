@@ -1,24 +1,33 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <!-- 背景: パステルなクリーム色の円 -->
+  <!-- 背景: パステルなクリーム色の円 (アプリのマスコット「しろねこ」の顔を大きく) -->
   <circle cx="256" cy="256" r="256" fill="#fff2df" />
   <circle cx="256" cy="256" r="236" fill="#ffe6bd" />
 
-  <!-- ひらがな「あ」 -->
-  <text
-    x="256"
-    y="330"
-    text-anchor="middle"
-    font-family="'Hiragino Maru Gothic ProN','Yu Gothic','Meiryo',sans-serif"
-    font-size="300"
-    font-weight="700"
-    fill="#5b4636"
-  >あ</text>
+  <!-- 耳 -->
+  <path d="M 148,182 L 172,58 L 258,158 Z" fill="#ffffff" stroke="#e0d3c4" stroke-width="10" stroke-linejoin="round" />
+  <path d="M 168,150 L 182,90 L 226,140 Z" fill="#ffc4d6" />
+  <path d="M 364,182 L 340,58 L 254,158 Z" fill="#ffffff" stroke="#e0d3c4" stroke-width="10" stroke-linejoin="round" />
+  <path d="M 344,150 L 330,90 L 286,140 Z" fill="#ffc4d6" />
 
-  <!-- 鉛筆 -->
-  <g transform="translate(330,60) rotate(45)">
-    <rect x="-22" y="0" width="44" height="230" rx="10" fill="#ff9d5c" />
-    <rect x="-22" y="0" width="44" height="40" rx="10" fill="#f4d35e" />
-    <polygon points="-22,230 22,230 0,270" fill="#e0a96d" />
-    <polygon points="-8,255 8,255 0,270" fill="#3d3d3d" />
-  </g>
+  <!-- 頭 -->
+  <circle cx="256" cy="270" r="150" fill="#ffffff" stroke="#e0d3c4" stroke-width="10" />
+
+  <!-- ひげ -->
+  <path d="M 150,268 L 60,258" stroke="#e5d9cb" stroke-width="7" stroke-linecap="round" />
+  <path d="M 150,292 L 60,300" stroke="#e5d9cb" stroke-width="7" stroke-linecap="round" />
+  <path d="M 362,268 L 452,258" stroke="#e5d9cb" stroke-width="7" stroke-linecap="round" />
+  <path d="M 362,292 L 452,300" stroke="#e5d9cb" stroke-width="7" stroke-linecap="round" />
+
+  <!-- ほっぺ -->
+  <ellipse cx="188" cy="300" rx="30" ry="22" fill="#ffb3c6" opacity="0.8" />
+  <ellipse cx="324" cy="300" rx="30" ry="22" fill="#ffb3c6" opacity="0.8" />
+
+  <!-- 目 -->
+  <circle cx="212" cy="264" r="27" fill="#5b4636" />
+  <circle cx="300" cy="264" r="27" fill="#5b4636" />
+  <circle cx="203" cy="255" r="8.5" fill="#ffffff" />
+  <circle cx="291" cy="255" r="8.5" fill="#ffffff" />
+
+  <!-- 口 -->
+  <path d="M 224,320 Q 240,336 256,320 Q 272,336 288,320" fill="none" stroke="#5b4636" stroke-width="9" stroke-linecap="round" />
 </svg>

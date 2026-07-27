@@ -5,6 +5,7 @@
 
 import { GROUPS, type CharGroup } from '../lib/groups.ts';
 import { getAllStars, getStickers } from '../lib/storage.ts';
+import { playTap } from '../lib/audio.ts';
 
 export interface SelectScreenProps {
   onSelect: (char: string) => void;
@@ -43,7 +44,10 @@ export function mountSelectScreen(container: HTMLElement, props: SelectScreenPro
   backBtn.type = 'button';
   backBtn.className = 'back-btn';
   backBtn.textContent = '← もどる';
-  backBtn.addEventListener('click', () => props.onBack());
+  backBtn.addEventListener('click', () => {
+    playTap();
+    props.onBack();
+  });
 
   const tabBar = document.createElement('div');
   tabBar.className = 'tab-bar';
@@ -67,6 +71,7 @@ export function mountSelectScreen(container: HTMLElement, props: SelectScreenPro
     btn.dataset.tab = tab.id;
     btn.addEventListener('click', () => {
       if (activeTab === tab.id) return;
+      playTap();
       activeTab = tab.id;
       rememberedTab = tab.id;
       renderAll();
@@ -93,11 +98,17 @@ export function mountSelectScreen(container: HTMLElement, props: SelectScreenPro
       const grid = document.createElement('div');
       grid.className = 'char-grid';
 
-      group.chars.forEach((char) => {
+      group.chars.forEach((char, charIndex) => {
         const card = document.createElement('button');
         card.type = 'button';
         card.className = 'char-card';
         card.dataset.char = char;
+
+        // 小さな装飾 (星・音符) を交互につける。見た目だけで意味は持たない
+        const decoEl = document.createElement('span');
+        decoEl.className = 'char-card-deco';
+        decoEl.textContent = charIndex % 2 === 0 ? '★' : '♪';
+        decoEl.setAttribute('aria-hidden', 'true');
 
         const charEl = document.createElement('div');
         charEl.className = 'char-card-char';
@@ -107,8 +118,11 @@ export function mountSelectScreen(container: HTMLElement, props: SelectScreenPro
         starsEl.className = 'char-card-stars';
         starsEl.textContent = starLabel(stars[char] ?? 0);
 
-        card.append(charEl, starsEl);
-        card.addEventListener('click', () => props.onSelect(char));
+        card.append(decoEl, charEl, starsEl);
+        card.addEventListener('click', () => {
+          playTap();
+          props.onSelect(char);
+        });
         grid.appendChild(card);
       });
 

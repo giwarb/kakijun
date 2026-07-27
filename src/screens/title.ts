@@ -3,7 +3,8 @@
  */
 
 import { isMuted, setMuted } from '../lib/storage.ts';
-import { setAudioMuted } from '../lib/audio.ts';
+import { playTap, setAudioMuted } from '../lib/audio.ts';
+import { createMascot } from '../lib/mascot.ts';
 
 export interface TitleScreenProps {
   onStart: () => void;
@@ -12,6 +13,9 @@ export interface TitleScreenProps {
 export function mountTitleScreen(container: HTMLElement, props: TitleScreenProps): () => void {
   container.innerHTML = '';
   container.classList.add('title-screen');
+
+  // 大きく登場し、ゆらゆら idle アニメで待つ (prefers-reduced-motion は CSS 側で無効化)
+  const mascot = createMascot('normal', { className: 'title-mascot mascot-idle' });
 
   const logo = document.createElement('div');
   logo.className = 'title-logo';
@@ -25,7 +29,10 @@ export function mountTitleScreen(container: HTMLElement, props: TitleScreenProps
   startBtn.type = 'button';
   startBtn.className = 'title-start-btn';
   startBtn.textContent = 'はじめる';
-  startBtn.addEventListener('click', () => props.onStart());
+  startBtn.addEventListener('click', () => {
+    playTap();
+    props.onStart();
+  });
 
   const muteBtn = document.createElement('button');
   muteBtn.type = 'button';
@@ -42,10 +49,12 @@ export function mountTitleScreen(container: HTMLElement, props: TitleScreenProps
     const next = !isMuted();
     setMuted(next);
     setAudioMuted(next);
+    // ミュート解除の操作音自体は次の setAudioMuted 反映後に鳴らす (ミュートへの切替時は鳴らさない)
+    if (!next) playTap();
     renderMuteBtn(next);
   });
 
-  container.append(logo, subtitle, startBtn, muteBtn);
+  container.append(mascot, logo, subtitle, startBtn, muteBtn);
 
   return function unmount(): void {
     container.innerHTML = '';
