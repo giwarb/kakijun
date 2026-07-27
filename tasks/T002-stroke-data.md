@@ -66,3 +66,42 @@ attempts: 0
 (なし)
 
 ## 作業ログ(担当エージェントが追記)
+
+### 2026-07-27 implementer
+
+実施内容:
+- `tools/build-strokes.mjs` を実装。数字0-9 + ひらがな清音46字(計56字)について、
+  KanjiVG から SVG を取得(`tools/kanjivg-cache/<hex>.svg` にキャッシュ、既存キャッシュがあればネットワークアクセスなし)、
+  `<g id="kvg:StrokePaths_...">` グループ内の `<path d="...">` を文書順に抽出し、
+  `svg-path-properties` で各ストロークを等間隔32点(小数1桁丸め)にサンプリングして
+  `src/data/strokes.json` を生成するようにした。
+- `tools/kanjivg-cache/LICENSE.txt` を作成(CC BY-SA 3.0 と KanjiVG 出典 URL を明記)。
+- `src/data/types.ts` に `StrokeData` / `CharStrokeData` 型を追加。
+- `src/data/strokes.test.ts` を作成(56文字存在チェック、strokes/medians要素数一致・32点・座標範囲チェック、
+  画数スポットチェック あ=3 い=2 き=4 ん=1 1=1 2=1 3=1)。
+- `tsconfig.json` に `resolveJsonModule: true` を追記。
+
+検証結果:
+- `npm run data` → 初回56ファイルダウンロード成功、`src/data/strokes.json` 生成。
+  2回目実行(json削除後)は "downloaded" ログなしでキャッシュのみから再生成できることを確認
+  (`tools/kanjivg-cache` に SVG 56件 + LICENSE.txt = 57ファイル存在)。
+- `npx vitest run src/data` → `src/data/strokes.test.ts` 65 tests 全件パス。
+  (`npm test` 全体は T003 が `src/lib/` を同時編集中のため実行対象外とし、自分のテストファイルのみ実行した)
+- `npm run build` (`tsc --noEmit && vite build`) → 成功。
+  ※ `src/data/strokes.test.ts` の `strokesData as StrokeData` キャストで
+  JSON推論型(`number[][][]`)とタプル型(`[number, number][][]`)の不一致による
+  tsc エラーが出たため `as unknown as StrokeData` に修正して解消。
+- `tools/kanjivg-cache/LICENSE.txt` に CC BY-SA 3.0 帰属表記あり(確認済み)。
+
+変更対象外ファイルの混入なし(`src/lib/` は未変更、他ワーカーの `src/lib/geometry.ts` にも触れていない)。
+
+### 2026-07-27 verifier
+
+T002/T003 が揃った状態で受け入れ基準を検証(コード修正なし)。
+
+- `npm run data` → 成功。`tools/kanjivg-cache` は実行前から56 SVG + LICENSE.txt = 57ファイルが揃っており、実行ログに `downloaded:` 行が一切出ず全56文字がキャッシュヒット(ネットワークアクセスなし)であることを確認。実行前後で `src/data/strokes.json` の MD5 (`c52f9ed28705de8c4aa23e079872a448`) が一致し、再生成が決定的であることも確認。→ ✅
+- `npm test` (フルスイート、T002+T003 全テスト同時実行) → `vitest run` で 4 ファイル / 88 tests 全件パス (`sanity.test.ts` 1, `geometry.test.ts` 12, `matcher.test.ts` 10, `strokes.test.ts` 65)。→ ✅
+- `npm run build` (`tsc --noEmit && vite build`) → 型エラーなし、vite build 成功、PWA (`dist/sw.js` 等) も生成。→ ✅
+- `tools/kanjivg-cache/LICENSE.txt` を目視確認 → CC BY-SA 3.0 の明記、出典 URL (KanjiVG GitHub / 公式サイト)、Ulrich Apel の著作権表記あり。→ ✅
+
+T002 の受け入れ基準はすべて合格。追加確認として `git diff tsconfig.json` で差分が `resolveJsonModule: true` の1行追加のみであることも確認(スコープ外の変更なし)。
