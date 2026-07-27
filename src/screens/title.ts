@@ -54,7 +54,73 @@ export function mountTitleScreen(container: HTMLElement, props: TitleScreenProps
     renderMuteBtn(next);
   });
 
-  container.append(mascot, logo, subtitle, startBtn, muteBtn);
+  // クレジット (T007): 隅に小さく「©」ボタン。6歳児の主要動線 (はじめる) の
+  // 邪魔にならないよう、他のボタンより小さくして画面隅に固定表示する。
+  const creditBtn = document.createElement('button');
+  creditBtn.type = 'button';
+  creditBtn.className = 'credit-btn';
+  creditBtn.textContent = '©';
+  creditBtn.setAttribute('aria-label', 'クレジットを みる');
+
+  let creditOverlay: HTMLDivElement | null = null;
+
+  function closeCredit(): void {
+    creditOverlay?.remove();
+    creditOverlay = null;
+  }
+
+  function openCredit(): void {
+    if (creditOverlay) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'credit-modal-overlay';
+    // 背景 (オーバーレイ) をタップしても閉じられるようにする
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) closeCredit();
+    });
+
+    const modal = document.createElement('div');
+    modal.className = 'credit-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'クレジット');
+
+    const heading = document.createElement('div');
+    heading.className = 'credit-modal-heading';
+    heading.textContent = 'クレジット';
+
+    const body = document.createElement('p');
+    body.className = 'credit-modal-body';
+    body.textContent = 'かきじゅんデータ: KanjiVG © Ulrich Apel (CC BY-SA 3.0)';
+
+    const link = document.createElement('a');
+    link.className = 'credit-modal-link';
+    link.href = 'https://kanjivg.tagaini.net/';
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'kanjivg.tagaini.net';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'credit-modal-close';
+    closeBtn.textContent = 'とじる';
+    closeBtn.addEventListener('click', () => {
+      playTap();
+      closeCredit();
+    });
+
+    modal.append(heading, body, link, closeBtn);
+    overlay.appendChild(modal);
+    container.appendChild(overlay);
+    creditOverlay = overlay;
+  }
+
+  creditBtn.addEventListener('click', () => {
+    playTap();
+    openCredit();
+  });
+
+  container.append(mascot, logo, subtitle, startBtn, muteBtn, creditBtn);
 
   return function unmount(): void {
     container.innerHTML = '';
