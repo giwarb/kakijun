@@ -20,14 +20,216 @@ body {
 
 #app {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   width: 100%;
   height: 100dvh;
+  overflow: hidden;
 }
 
 .title {
   font-size: 3rem;
   font-weight: 700;
   color: #5b4636;
+}
+
+/* ---- practice screen (T004) ---- */
+
+.practice-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0.75rem 1rem;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+.practice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 640px;
+}
+
+.practice-reading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #5b4636;
+}
+
+.practice-phase {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #d96f8a;
+  background: #fff0f4;
+  border-radius: 999px;
+  padding: 0.25rem 0.9rem;
+}
+
+.phase-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.progress-dots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.progress-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #e5d9cb;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.progress-dot-done {
+  background: #6fa8dc;
+}
+
+.progress-dot-current {
+  background: #f4a5bd;
+  transform: scale(1.3);
+}
+
+.practice-stage-wrap {
+  position: relative;
+  width: min(70vmin, 70vw, 520px);
+  aspect-ratio: 1 / 1;
+  background: #ffffff;
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 16px rgba(91, 70, 54, 0.12);
+  flex: 0 0 auto;
+}
+
+.practice-stage-wrap.shake {
+  animation: practice-shake 0.35s ease;
+}
+
+@keyframes practice-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.practice-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+.stroke-silhouette {
+  stroke: #e5d9cb;
+}
+
+.stroke-guide-current {
+  stroke: #f4a5bd;
+  stroke-dasharray: 3 5;
+  opacity: 0.9;
+}
+
+.stroke-completed {
+  stroke: #6fa8dc;
+}
+
+.stroke-demo {
+  stroke: #f4a5bd;
+}
+
+.stroke-trail {
+  stroke: #ff8fab;
+  opacity: 0.85;
+}
+
+.stroke-trail-snap {
+  stroke: #6fa8dc;
+  opacity: 1;
+  transition: d 0.12s ease, stroke 0.12s ease;
+}
+
+.stroke-trail-fade {
+  transition: opacity 0.25s ease;
+  opacity: 0;
+}
+
+.demo-dot {
+  fill: #ff8fab;
+}
+
+.start-dot-circle {
+  fill: #ff6b8b;
+  stroke: #ffffff;
+  stroke-width: 1;
+}
+
+.start-dot-label {
+  fill: #ffffff;
+  font-size: 6px;
+  font-weight: 700;
+}
+
+.start-dot.pulse .start-dot-circle {
+  animation: practice-pulse 1s ease-in-out infinite;
+}
+
+.start-dot.flash-on .start-dot-circle {
+  fill: #ffd166;
+}
+
+.start-dot.emphasize .start-dot-circle {
+  animation: practice-pulse 0.4s ease-in-out infinite;
+  fill: #ffd166;
+}
+
+@keyframes practice-pulse {
+  0%,
+  100% {
+    r: 6;
+    opacity: 1;
+  }
+  50% {
+    r: 8.5;
+    opacity: 0.6;
+  }
+}
+
+.direction-arrow {
+  stroke: #6fa8dc;
+  stroke-width: 2;
+}
+
+.direction-arrow.flash-on {
+  stroke: #ffd166;
+}
+
+.direction-arrow-head {
+  fill: #6fa8dc;
+}
+
+.practice-message {
+  min-height: 2.4rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #5b4636;
+  text-align: center;
 }

@@ -1,6 +1,6 @@
 # プロジェクト進捗ボード
 
-最終更新: 2026-07-27 (T002・T003 done / T004 委譲開始)
+最終更新: 2026-07-27 (T004 done / T005 委譲開始)
 
 ## タスク一覧
 
@@ -9,8 +9,8 @@
 | T001 | Vite + TS + PWA + Pages デプロイ土台 | implementer | done | 1 |
 | T002 | KanjiVG 書き順データパイプライン | implementer | done | 1 |
 | T003 | ストローク判定エンジン | implementer | done | 1 |
-| T004 | れんしゅう画面 (3フェーズ + 訂正) | implementer | in_progress | 1 |
-| T005 | アプリシェル (選択/進捗/ごほうび) | implementer | todo | 0 |
+| T004 | れんしゅう画面 (3フェーズ + 訂正) | implementer | done | 2 |
+| T005 | アプリシェル (選択/進捗/ごほうび) | implementer | in_progress | 1 |
 | T006 | かわいさ・ゲーム演出 | implementer | todo | 0 |
 | T007 | PWA 仕上げ・README・リリース検証 | implementer | todo | 0 |
 
