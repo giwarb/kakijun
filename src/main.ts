@@ -82,6 +82,7 @@ if (appEl) {
           recordResult(char, stars);
           showReward(char, stars);
         },
+        onExit: showSelect,
       })
     );
   }

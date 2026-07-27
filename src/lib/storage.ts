@@ -48,6 +48,14 @@ function isValidStarValue(value: unknown): value is number {
 }
 
 /**
+ * 進捗リセット (T008): stars/stickers を初期化したデータを返す。muted は引き継いで保持する
+ * (ミュート設定はユーザーの機器設定に近く、記録リセットの対象外とする)。
+ */
+export function resetProgressData(data: StorageData): StorageData {
+  return { stars: {}, stickers: [], muted: data.muted };
+}
+
+/**
  * localStorage から読み出した生文字列を StorageData にパースする。
  * JSON 破損・想定外の形でも例外を投げず、壊れているフィールド (または壊れている要素) だけ
  * 初期値/除外にフォールバックする。stars は各値を検証し、0-3 の有限整数でないものは無視する
@@ -141,4 +149,9 @@ export function setMuted(muted: boolean): void {
   const data = loadData();
   data.muted = muted;
   saveData(data);
+}
+
+/** 星・ステッカーの記録を全消去する (設定画面のリセット用)。muted 設定は保持する */
+export function resetProgress(): void {
+  saveData(resetProgressData(loadData()));
 }

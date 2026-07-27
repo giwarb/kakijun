@@ -6,7 +6,7 @@
 
 import type { CharStrokeData } from '../data/types.ts';
 import { matchStroke, type FailReason, type Point } from '../lib/matcher.ts';
-import { playOops, playPop, playSuccess } from '../lib/audio.ts';
+import { playOops, playPop, playSuccess, playTap } from '../lib/audio.ts';
 import { createMascot, setMascotMood, type MascotMood } from '../lib/mascot.ts';
 import { burstSparkle } from '../lib/confetti.ts';
 import { PracticeState, type Phase, type PracticeResult, type PracticeStateSnapshot } from '../lib/practiceState.ts';
@@ -37,6 +37,8 @@ export interface PracticeScreenProps {
   strokeData: CharStrokeData;
   /** 完了時 (じぶんでフェーズの最後の画に正解したとき) に呼ばれる */
   onComplete: (result: PracticeResult) => void;
+  /** 「← もどる」ボタン押下時に呼ばれる (中断。その文字の進捗は保存しない) */
+  onExit: () => void;
 }
 
 declare global {
@@ -125,15 +127,41 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
   let currentPoints: Point[] = [];
   let trailEl: SVGPathElement | null = null;
   let destroyed = false;
+  /**
+   * 「← もどる」が押されたか。unmount() が実際に呼ばれる (画面遷移フェードの都合で少し遅れる)
+   * より前に、進行中の非同期処理 (アニメ・判定) を即座に打ち切って onComplete などの副作用が
+   * 遅れて発火しないようにするためのフラグ。destroyed とは別に持つ。
+   */
+  let exiting = false;
 
   container.innerHTML = '';
   container.classList.add('practice-screen');
 
   const header = document.createElement('div');
   header.className = 'practice-header';
+
+  const headerLeft = document.createElement('div');
+  headerLeft.className = 'practice-header-left';
+
+  const backBtn = document.createElement('button');
+  backBtn.type = 'button';
+  backBtn.className = 'back-btn';
+  backBtn.textContent = '← もどる';
+  backBtn.setAttribute('aria-label', 'もじえらびに もどる');
+  backBtn.addEventListener('click', () => {
+    if (exiting) return;
+    exiting = true;
+    watchAbort?.abort();
+    playTap();
+    props.onExit();
+  });
+
   const readingEl = document.createElement('div');
   readingEl.className = 'practice-reading';
   readingEl.textContent = props.reading ?? props.char;
+
+  headerLeft.append(backBtn, readingEl);
+
   const phaseEl = document.createElement('div');
   phaseEl.className = 'practice-phase';
   const phaseIconEl = document.createElement('span');
@@ -141,7 +169,7 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
   const phaseLabelEl = document.createElement('span');
   phaseLabelEl.className = 'phase-label';
   phaseEl.append(phaseIconEl, phaseLabelEl);
-  header.append(readingEl, phaseEl);
+  header.append(headerLeft, phaseEl);
 
   const progressDotsEl = document.createElement('div');
   progressDotsEl.className = 'progress-dots';
@@ -257,7 +285,7 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
   }
 
   async function handleStrokeInput(points: Point[], existingTrail?: SVGPathElement): Promise<void> {
-    if (busy || destroyed) return;
+    if (busy || destroyed || exiting) return;
     const snap = state.getSnapshot();
     if (snap.phase !== 'trace' && snap.phase !== 'solo') return;
     busy = true;
@@ -285,6 +313,7 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
           burstSparkle(stageWrap, lastPoint.x / 109, lastPoint.y / 109);
         }
         await snapToReference(trail, referenceD);
+        if (destroyed || exiting) return;
         trail.remove();
         const outcome = state.recordStrokeResult(true);
         renderStage();
@@ -306,14 +335,17 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
       } else {
         playOops();
         await Promise.all([fadeOutTrail(trail), shakeElement(stageWrap)]);
+        if (destroyed || exiting) return;
         const reason: FailReason = result.reason ?? 'wrong-shape';
         flashMood('sad', 1200);
         setMessage(pickRandom(REASON_MESSAGES[reason]));
         await runCorrectionOverlay(strokeIndex, reason);
+        if (destroyed || exiting) return;
         const outcome = state.recordStrokeResult(false);
         if (outcome.hintTriggered) {
           setMessage(HINT_MESSAGE);
           await runHintDemo(strokeIndex);
+          if (destroyed || exiting) return;
         }
         renderStage();
         updateHeader(outcome.snapshot);
@@ -374,7 +406,7 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
   }
 
   function onPointerDown(evt: PointerEvent): void {
-    if (busy) return;
+    if (busy || destroyed || exiting) return;
     // キャプチャ中に別の指 (別 pointerId) が触れても無視する (タブレットで手を添える6歳児対策)
     if (capturing && evt.pointerId !== activePointerId) return;
     const snap = state.getSnapshot();
@@ -421,7 +453,7 @@ export function mountPracticeScreen(container: HTMLElement, props: PracticeScree
 
   window.__kakijun = {
     simulateStroke: async (points) => {
-      if (destroyed) return;
+      if (destroyed || exiting) return;
       if (state.getSnapshot().phase === 'watch') {
         watchAbort?.abort();
         finishWatchAndEnterTrace();

@@ -1,6 +1,6 @@
 # プロジェクト進捗ボード
 
-最終更新: 2026-07-27 (全タスク done — リリース済み)
+最終更新: 2026-07-27 (T008 done — v1.1 リリース済み)
 
 ## タスク一覧
 
@@ -13,6 +13,7 @@
 | T005 | アプリシェル (選択/進捗/ごほうび) | implementer | done | 2 |
 | T006 | かわいさ・ゲーム演出 | implementer | done | 2 |
 | T007 | PWA 仕上げ・README・リリース検証 | implementer | done | 1 |
+| T008 | れんしゅう中のもどる + 進捗リセット | implementer | done | 2 |
 
 状態: `todo` → `in_progress` → `review` → `done` / 不合格: `redo` / 着手不能: `blocked`
 

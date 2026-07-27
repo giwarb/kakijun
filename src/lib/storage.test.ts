@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { computeEarnedStickerIds, computeStars, mergeStars, parseStorageData } from './storage.ts';
+import {
+  computeEarnedStickerIds,
+  computeStars,
+  mergeStars,
+  parseStorageData,
+  resetProgressData,
+} from './storage.ts';
 import type { CharGroup } from './groups.ts';
 
 describe('computeStars', () => {
@@ -80,5 +86,30 @@ describe('parseStorageData', () => {
       muted: false,
     });
     expect(parseStorageData(raw)).toEqual({ stars: { あ: 3, き: 0 }, stickers: [], muted: false });
+  });
+});
+
+/**
+ * resetProgress() 自体は loadData/saveData (localStorage 依存) を組み合わせるだけなので、
+ * このファイルの他の localStorage 連携関数と同様にユニットテスト対象外とし (e2e で担保)、
+ * 中身の純ロジックである resetProgressData をここでテストする。
+ */
+describe('resetProgressData', () => {
+  it('stars と stickers を初期化し、muted (true) は保持する', () => {
+    const data = { stars: { あ: 3, い: 2 }, stickers: ['g1'], muted: true };
+    expect(resetProgressData(data)).toEqual({ stars: {}, stickers: [], muted: true });
+  });
+
+  it('muted (false) のときも保持される', () => {
+    const data = { stars: { あ: 1 }, stickers: ['g1', 'g2'], muted: false };
+    expect(resetProgressData(data)).toEqual({ stars: {}, stickers: [], muted: false });
+  });
+
+  it('すでに空の記録に対しても安全に初期値を返す', () => {
+    expect(resetProgressData({ stars: {}, stickers: [], muted: true })).toEqual({
+      stars: {},
+      stickers: [],
+      muted: true,
+    });
   });
 });

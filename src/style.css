@@ -834,3 +834,100 @@ button:active {
   border: none;
   border-radius: 999px;
 }
+
+/* ---- 進捗リセット (T008) ---- */
+
+/* クレジットボタンと対になる、右下の控えめな設定ボタン。同じく主要動線からは外す */
+.settings-btn {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-size: 0.95rem;
+  line-height: 1;
+  color: #a99a8a;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid #e5d9cb;
+  border-radius: 50%;
+  z-index: 5;
+}
+
+.reset-modal-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(91, 70, 54, 0.45);
+  z-index: 100;
+}
+
+.reset-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 320px;
+  padding: 1.5rem 1.25rem;
+  background: #ffffff;
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 24px rgba(91, 70, 54, 0.25);
+  text-align: center;
+}
+
+.reset-modal-heading {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #5b4636;
+}
+
+.reset-modal-body {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #5b4636;
+  line-height: 1.6;
+}
+
+.reset-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* 「けす」: 危険色・小さめ (誤タップを避ける) */
+.reset-confirm-btn {
+  min-width: 56px;
+  min-height: 44px;
+  padding: 0.4rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #d9435e;
+  background: #fff0f0;
+  border: 2px solid #f3b6bf;
+  border-radius: 999px;
+}
+
+/* 「やめる」: 安全側・大きめ・デフォルトフォーカス */
+.reset-cancel-btn {
+  min-width: 64px;
+  min-height: 64px;
+  padding: 0.5rem 1.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  background: #6fa8dc;
+  border: none;
+  border-radius: 999px;
+}
+
+/* ---- れんしゅう画面のもどるボタン (T008) ---- */
+
+.practice-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
