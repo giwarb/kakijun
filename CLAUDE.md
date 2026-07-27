@@ -103,9 +103,24 @@ Agent tool で以下を指名して起動する。implementer / tester / verifie
 
 ## プロジェクト固有情報
 
-(テンプレート利用開始後、ビルド・テストコマンドや技術スタックが決まったらここに追記してください)
+**kakijun** — 6歳(年長)向け ひらがな・数字の書き順練習アプリ。PWA として GitHub Pages で配信。
 
-- 技術スタック:
-- ビルド:
-- テスト:
-- Lint / Format:
+- リポジトリ: https://github.com/giwarb/kakijun (public)
+- 公開 URL: https://giwarb.github.io/kakijun/ (base path `/kakijun/`)
+- 技術スタック: Vite + TypeScript (フレームワークなし・SVG レンダリング + Pointer Events)、vite-plugin-pwa
+- ビルド: `npm run build` (tsc --noEmit && vite build)
+- テスト: `npm test` (Vitest)
+- 開発サーバー: `npm run dev`
+- 書き順データ生成: `npm run data` (tools/build-strokes.mjs — KanjiVG から取得・変換して src/data/strokes.json を再生成。生成物はコミットする)
+- 書き順データソース: **KanjiVG** (https://github.com/KanjiVG/kanjivg, CC BY-SA 3.0, © Ulrich Apel)。ひらがな 46 字 (例: あ = U+3042 → `kanji/03042.svg`) と数字 0-9 (例: 1 = U+0031 → `kanji/00031.svg`) の両方をカバー済みと確認済み。viewBox は `0 0 109 109`。**README とアプリ内クレジットに CC BY-SA 3.0 の帰属表記が必須。**
+- 対象文字: ひらがな清音 46 字 + 数字 0-9 = 56 字
+- デプロイ: GitHub Actions → GitHub Pages (main push で自動)
+
+### 設計方針(タスク間で共有する前提)
+
+- 画面遷移: 単純なステートマシン SPA (タイトル → もじえらび → れんしゅう → ごほうび)
+- れんしゅう画面は 3 フェーズ: 「みてね」(お手本アニメ) → 「なぞってね」(ガイド付きトレース) → 「じぶんで」(薄いシルエットのみ)
+- 判定エンジン `src/lib/matcher.ts` は DOM 非依存の純関数 (始点・方向・形状距離・書き順違い検出)。失敗理由を返し UI が優しく訂正する
+- 進捗は localStorage (文字ごとの星 0-3、ステッカー)
+- 効果音は WebAudio で合成 (音声ファイル資産なし)。ミュートボタンあり
+- UI テキストは 6 歳向け: ひらがなのみ・大きなボタン・テンポ重視 (自動進行、待たせない)

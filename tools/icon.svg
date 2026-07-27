@@ -1,0 +1,24 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景: パステルなクリーム色の円 -->
+  <circle cx="256" cy="256" r="256" fill="#fff2df" />
+  <circle cx="256" cy="256" r="236" fill="#ffe6bd" />
+
+  <!-- ひらがな「あ」 -->
+  <text
+    x="256"
+    y="330"
+    text-anchor="middle"
+    font-family="'Hiragino Maru Gothic ProN','Yu Gothic','Meiryo',sans-serif"
+    font-size="300"
+    font-weight="700"
+    fill="#5b4636"
+  >あ</text>
+
+  <!-- 鉛筆 -->
+  <g transform="translate(330,60) rotate(45)">
+    <rect x="-22" y="0" width="44" height="230" rx="10" fill="#ff9d5c" />
+    <rect x="-22" y="0" width="44" height="40" rx="10" fill="#f4d35e" />
+    <polygon points="-22,230 22,230 0,270" fill="#e0a96d" />
+    <polygon points="-8,255 8,255 0,270" fill="#3d3d3d" />
+  </g>
+</svg>

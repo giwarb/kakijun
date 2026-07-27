@@ -1,15 +1,24 @@
 # プロジェクト進捗ボード
 
-最終更新: (オーケストレーターが更新)
+最終更新: 2026-07-27 (T001 done / T002・T003 並列委譲開始)
 
 ## タスク一覧
 
 | ID | タスク | 担当 | 状態 | 試行 |
 |---|---|---|---|---|
-| — | (まだタスクはありません) | — | — | — |
+| T001 | Vite + TS + PWA + Pages デプロイ土台 | implementer | done | 1 |
+| T002 | KanjiVG 書き順データパイプライン | implementer | in_progress | 1 |
+| T003 | ストローク判定エンジン | implementer | in_progress | 1 |
+| T004 | れんしゅう画面 (3フェーズ + 訂正) | implementer | todo | 0 |
+| T005 | アプリシェル (選択/進捗/ごほうび) | implementer | todo | 0 |
+| T006 | かわいさ・ゲーム演出 | implementer | todo | 0 |
+| T007 | PWA 仕上げ・README・リリース検証 | implementer | todo | 0 |
 
 状態: `todo` → `in_progress` → `review` → `done` / 不合格: `redo` / 着手不能: `blocked`
 
+依存関係: T001 → (T002 ∥ T003) → T004 → T005 → T006 → T007
+
 ## メモ・ブロッカー
 
-(なし)
+- KanjiVG がひらがな・数字 0-9 をカバーすることは確認済み (03042.svg, 00031.svg 等が 200)
+- GitHub Pages の有効化 (build_type=workflow) はオーケストレーターが gh api で実施予定

@@ -1,0 +1,33 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, 'Hiragino Maru Gothic ProN', 'Hiragino Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff7ef;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+#app {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100dvh;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #5b4636;
+}
