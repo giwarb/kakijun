@@ -1,10 +1,10 @@
-// れんしゅう画面 (T004) のスモーク E2E。
+// アプリシェル (T005) を含めたスモーク E2E。
 // 使い方: npm run e2e (事前に `npx playwright install chromium` が必要)
 //
 // vite の開発サーバーを (プログラム的に) 起動し、Chromium (headless) で
-// practice 画面のデバッグフック `window.__kakijun.simulateStroke` を使って
-// 「あ」の全画を なぞってね フェーズ → じぶんで フェーズの順に描き、
-// 完了状態 (`__kakijun.getPhase() === 'complete'`) に到達することを確認する。
+// タイトル画面 →「はじめる」→ もじえらび画面 →「1」を選択 → れんしゅう画面の
+// デバッグフック `window.__kakijun.simulateStroke` で全画をなぞり終える →
+// ごほうび画面に星が表示される、までの一連のフローを検証する。
 //
 // ポートは都度空きポートを探して使うため、他の開発サーバーと衝突しない。
 import { createServer as createNetServer } from 'node:net';
@@ -17,7 +17,7 @@ import { chromium } from 'playwright';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 
-const TARGET_CHAR = 'あ';
+const TARGET_CHAR = '1';
 const TIMEOUT_MS = 30000;
 
 function findFreePort() {
@@ -77,6 +77,18 @@ async function main() {
 
     await page.goto(url, { waitUntil: 'load' });
 
+    // ---- タイトル画面 ----
+    await page.waitForSelector('.title-screen .title-start-btn');
+    console.log('[e2e] タイトル画面を表示');
+    await page.click('.title-screen .title-start-btn');
+
+    // ---- もじえらび画面: 「すうじ」タブがデフォルトで選ばれている想定で「1」を選ぶ ----
+    const charSelector = `.select-screen .char-card[data-char="${TARGET_CHAR}"]`;
+    await page.waitForSelector(charSelector);
+    console.log('[e2e] もじえらび画面を表示');
+    await page.click(charSelector);
+
+    // ---- れんしゅう画面 ----
     await page.waitForFunction(() => Boolean(window.__kakijun), undefined, { timeout: TIMEOUT_MS });
 
     const initialPhase = await page.evaluate(() => window.__kakijun.getPhase());
@@ -104,18 +116,22 @@ async function main() {
       throw new Error(`完了状態に到達しませんでした (最終フェーズ: ${finalPhase})`);
     }
 
-    const dataPhase = await page.evaluate(
-      () => document.querySelector('.practice-screen')?.getAttribute('data-phase')
-    );
-    if (dataPhase !== 'complete') {
-      throw new Error(`practice-screen の data-phase が complete になっていません: ${dataPhase}`);
+    // ---- ごほうび画面: 星が表示されることを確認 ----
+    await page.waitForSelector('.reward-screen');
+    const stars = await page.evaluate(() => document.querySelector('.reward-screen')?.getAttribute('data-stars'));
+    console.log(`[e2e] ごほうび画面の獲得星: ${stars}`);
+    const starsNum = Number(stars);
+    if (!Number.isInteger(starsNum) || starsNum < 1 || starsNum > 3) {
+      throw new Error(`ごほうび画面の星の値が不正です: ${stars}`);
     }
 
     if (consoleErrors.length > 0) {
       throw new Error(`ブラウザ側でエラーが発生しました:\n${consoleErrors.join('\n')}`);
     }
 
-    console.log('[e2e] OK: 「あ」の練習が完了状態に到達しました');
+    console.log(
+      `[e2e] OK: タイトル→もじえらび→「${TARGET_CHAR}」の練習→ごほうび (星${starsNum}) まで到達しました`
+    );
   } finally {
     if (browser) await browser.close();
     await viteServer.close();
