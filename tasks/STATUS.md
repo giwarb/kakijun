@@ -1,6 +1,6 @@
 # プロジェクト進捗ボード
 
-最終更新: 2026-07-27 (T008 done — v1.1 リリース済み)
+最終更新: 2026-08-03 (T009 done — 数字「8」の書き順方向補正。verifier/reviewer とも合格)
 
 ## タスク一覧
 
@@ -14,6 +14,7 @@
 | T006 | かわいさ・ゲーム演出 | implementer | done | 2 |
 | T007 | PWA 仕上げ・README・リリース検証 | implementer | done | 1 |
 | T008 | れんしゅう中のもどる + 進捗リセット | implementer | done | 2 |
+| T009 | 数字「8」の書き順方向を反転補正 | implementer | done | 1 |
 
 状態: `todo` → `in_progress` → `review` → `done` / 不合格: `redo` / 着手不能: `blocked`
 

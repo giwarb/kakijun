@@ -79,6 +79,97 @@ function round1(n) {
   return Math.round(n * 10) / 10;
 }
 
+function round2(n) {
+  return Math.round(n * 100) / 100;
+}
+
+// 文字別の「ストローク反転」補正。文字 -> 反転するストロークのインデックス配列。
+// KanjiVG 由来の書き順が日本の一般的な書き方と逆になっているケースをここで補正する。
+const REVERSE_STROKES = { '8': [0] };
+
+// KanjiVG 形式のパス `d` (M + cubic (`c`/`C`) の連続) を絶対座標の
+// cubic セグメント列 [{ p0, c1, c2, p3 }, ...] にパースする。
+function parsePathSegments(d) {
+  const tokens = d.match(/[MmCc]|-?\d*\.?\d+/g);
+  if (!tokens) {
+    throw new Error(`cannot parse path: ${d}`);
+  }
+  let i = 0;
+  function readNum() {
+    const t = tokens[i];
+    if (t === undefined || /[A-Za-z]/.test(t)) {
+      throw new Error(`expected number in path: ${d}`);
+    }
+    i += 1;
+    return parseFloat(t);
+  }
+
+  const cmd0 = tokens[i++];
+  if (cmd0 !== 'M') {
+    throw new Error(`unsupported path command (expected M first): ${cmd0} in ${d}`);
+  }
+  let x = readNum();
+  let y = readNum();
+  const start = [x, y];
+
+  const segments = [];
+  let curCmd = null;
+  while (i < tokens.length) {
+    const t = tokens[i];
+    if (t === 'c' || t === 'C') {
+      curCmd = t;
+      i += 1;
+      continue;
+    }
+    if (/[A-Za-z]/.test(t)) {
+      throw new Error(`unsupported path command: ${t} in ${d}`);
+    }
+    if (curCmd !== 'c' && curCmd !== 'C') {
+      throw new Error(`unexpected coordinates without a command in path: ${d}`);
+    }
+    const x1 = readNum();
+    const y1 = readNum();
+    const x2 = readNum();
+    const y2 = readNum();
+    const x3 = readNum();
+    const y3 = readNum();
+    const p0 = [x, y];
+    let c1;
+    let c2;
+    let p3;
+    if (curCmd === 'c') {
+      c1 = [x + x1, y + y1];
+      c2 = [x + x2, y + y2];
+      p3 = [x + x3, y + y3];
+    } else {
+      c1 = [x1, y1];
+      c2 = [x2, y2];
+      p3 = [x3, y3];
+    }
+    segments.push({ p0, c1, c2, p3 });
+    x = p3[0];
+    y = p3[1];
+  }
+  return { start, segments };
+}
+
+// パス `d` を逆走パスに変換する(形状は保存し進行方向だけ反転する)。
+// M x,y の後に cubic (`c`/`C`) が連続する KanjiVG 形式のみサポートする。
+function reversePathD(d) {
+  const { segments } = parsePathSegments(d);
+  if (segments.length === 0) {
+    throw new Error(`no cubic segments to reverse: ${d}`);
+  }
+
+  const last = segments[segments.length - 1];
+  let out = `M${round2(last.p3[0])},${round2(last.p3[1])}`;
+  for (let k = segments.length - 1; k >= 0; k -= 1) {
+    const { p0, c1, c2 } = segments[k];
+    out += `C${round2(c2[0])},${round2(c2[1])} ${round2(c1[0])},${round2(c1[1])} ${round2(p0[0])},${round2(p0[1])}`;
+  }
+  return out;
+}
+
 // パスを等間隔 SAMPLE_POINTS 点にサンプリングする ([x, y] の配列、小数1桁に丸め)
 function sampleMedian(d) {
   const props = new svgPathProperties(d);
@@ -94,7 +185,11 @@ function sampleMedian(d) {
 
 async function buildChar(ch) {
   const svg = await loadSvg(ch);
-  const ds = extractStrokeDs(svg);
+  const rawDs = extractStrokeDs(svg);
+  const reverseIndices = REVERSE_STROKES[ch];
+  const ds = reverseIndices
+    ? rawDs.map((d, i) => (reverseIndices.includes(i) ? reversePathD(d) : d))
+    : rawDs;
   const medians = ds.map(sampleMedian);
   return { strokes: ds, medians };
 }
